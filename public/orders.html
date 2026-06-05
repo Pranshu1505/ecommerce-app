@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders - ShopEasy</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+    .navbar {
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      padding: 16px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+    .navbar h2 { font-size: 24px; }
+    .nav-links { display: flex; gap: 16px; }
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.2);
+    }
+    .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+    h1 { font-size: 28px; color: #333; margin-bottom: 24px; }
+    .order-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #f5f5f5;
+    }
+    .order-header h3 { font-size: 16px; color: #999; }
+    .order-header h3 span { color: #333; font-weight: 700; }
+    .status-badge {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-processing { background: #cce5ff; color: #004085; }
+    .status-shipped { background: #d4edda; color: #155724; }
+    .status-delivered { background: #d4edda; color: #155724; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+    .order-items { margin-bottom: 16px; }
+    .order-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .order-item:last-child { border-bottom: none; }
+    .order-item .emoji { font-size: 28px; }
+    .order-item .info { flex: 1; }
+    .order-item .info h4 { font-size: 15px; color: #333; }
+    .order-item .info p { font-size: 13px; color: #999; }
+    .order-item .price { font-weight: 700; color: #f5576c; }
+    .order-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+      border-top: 2px solid #f5f5f5;
+    }
+    .order-footer .address { font-size: 14px; color: #999; }
+    .order-footer .total { font-size: 20px; font-weight: 800; color: #f5576c; }
+    .empty-orders {
+      text-align: center;
+      padding: 60px;
+      color: #999;
+      font-size: 18px;
+    }
+    .empty-orders .icon { font-size: 60px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h2>🛍️ ShopEasy</h2>
+    <div class="nav-links">
+      <a href="/products.html">🛒 Products</a>
+      <a href="/cart.html">🛒 Cart</a>
+      <a href="#" onclick="logout()">Logout</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>📦 Mere Orders</h1>
+    <div id="ordersList"></div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token')
+    if (!token) window.location.href = '/index.html'
+
+    async function loadOrders() {
+      const res = await fetch('/orders/my', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      const orders = await res.json()
+      const container = document.getElementById('ordersList')
+
+      if (orders.length === 0) {
+        container.innerHTML = `
+          <div class="empty-orders">
+            <div class="icon">📦</div>
+            <p>Koi order nahi hai!</p>
+            <br>
+            <a href="/products.html" style="color:#f5576c;font-weight:700;">Shopping karo →</a>
+          </div>`
+        return
+      }
+
+      container.innerHTML = orders.map(o => `
+        <div class="order-card">
+          <div class="order-header">
+            <h3>Order ID: <span>#${o._id.slice(-8).toUpperCase()}</span></h3>
+            <span class="status-badge status-${o.status}">${getStatusEmoji(o.status)} ${o.status.toUpperCase()}</span>
+          </div>
+          <div class="order-items">
+            ${o.items.map(i => `
+              <div class="order-item">
+                <div class="emoji">${getCategoryEmoji(i.product?.category)}</div>
+                <div class="info">
+                  <h4>${i.product?.name || 'Product'}</h4>
+                  <p>Qty: ${i.quantity} × ₹${i.price?.toLocaleString()}</p>
+                </div>
+                <div class="price">₹${(i.quantity * i.price).toLocaleString()}</div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="order-footer">
+            <div class="address">📍 ${o.address}</div>
+            <div class="total">₹${o.totalAmount.toLocaleString()}</div>
+          </div>
+        </div>
+      `).join('')
+    }
+
+    function getStatusEmoji(status) {
+      const emojis = {
+        'pending': '⏳',
+        'processing': '⚙️',
+        'shipped': '🚚',
+        'delivered': '✅',
+        'cancelled': '❌'
+      }
+      return emojis[status] || '📦'
+    }
+
+    function getCategoryEmoji(category) {
+      const emojis = { 'Electronics': '📱', 'Clothing': '👕', 'Books': '📚', 'Food': '🍕', 'Sports': '⚽' }
+      return emojis[category] || '📦'
+    }
+
+    function logout() {
+      localStorage.clear()
+      window.location.href = '/index.html'
+    }
+
+    loadOrders()
+  </script>
+</body>
+</html>

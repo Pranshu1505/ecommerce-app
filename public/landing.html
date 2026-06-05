@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopEasy</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container { text-align: center; color: white; padding: 20px; }
+    .icon { font-size: 80px; margin-bottom: 20px; }
+    h1 { font-size: 48px; font-weight: 800; margin-bottom: 10px; }
+    p { font-size: 20px; opacity: 0.85; margin-bottom: 50px; }
+    .buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      padding: 16px 48px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    .btn:hover { transform: translateY(-3px); }
+    .btn-register { background: white; color: #f5576c; }
+    .btn-login { background: transparent; color: white; border: 3px solid white; }
+    .features {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-top: 60px;
+      flex-wrap: wrap;
+    }
+    .feature-box {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 24px 30px;
+      width: 160px;
+    }
+    .feature-box .emoji { font-size: 36px; margin-bottom: 10px; }
+    .feature-box p { font-size: 14px; opacity: 0.9; margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🛍️</div>
+    <h1>ShopEasy</h1>
+    <p>India ka sabse acha online store</p>
+    <div class="buttons">
+      <a href="/register.html" class="btn btn-register">📝 Register</a>
+      <a href="/index.html" class="btn btn-login">🔐 Login</a>
+    </div>
+    <div class="features">
+      <div class="feature-box">
+        <div class="emoji">🚀</div>
+        <p>Fast Delivery</p>
+      </div>
+      <div class="feature-box">
+        <div class="emoji">💳</div>
+        <p>Secure Payment</p>
+      </div>
+      <div class="feature-box">
+        <div class="emoji">↩️</div>
+        <p>Easy Returns</p>
+      </div>
+      <div class="feature-box">
+        <div class="emoji">⭐</div>
+        <p>Top Rated</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

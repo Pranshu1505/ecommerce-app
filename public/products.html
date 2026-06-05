@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products - ShopEasy</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+
+    /* Navbar */
+    .navbar {
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      padding: 16px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+    .navbar h2 { font-size: 24px; }
+    .nav-links { display: flex; gap: 16px; align-items: center; }
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.2);
+    }
+    .nav-links a:hover { background: rgba(255,255,255,0.3); }
+
+    /* Filters */
+    .filters {
+      background: white;
+      padding: 20px 30px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .filters input, .filters select {
+      padding: 10px 16px;
+      border: 2px solid #eee;
+      border-radius: 10px;
+      font-size: 15px;
+      outline: none;
+    }
+    .filters input:focus, .filters select:focus { border-color: #f5576c; }
+    .filters input { width: 280px; }
+
+    /* Products Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
+      padding: 30px;
+    }
+    .product-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      transition: transform 0.2s;
+    }
+    .product-card:hover { transform: translateY(-5px); }
+    .product-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: linear-gradient(135deg, #f093fb22, #f5576c22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+    }
+    .product-info { padding: 16px; }
+    .product-info h3 { font-size: 18px; color: #333; margin-bottom: 8px; }
+    .product-info .category {
+      font-size: 12px;
+      color: #f5576c;
+      background: #f5576c11;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    .product-info .price { font-size: 22px; font-weight: 800; color: #f5576c; margin-bottom: 8px; }
+    .product-info .rating { color: #ffc107; font-size: 14px; margin-bottom: 12px; }
+    .product-info .stock { font-size: 13px; color: #999; margin-bottom: 12px; }
+    .add-cart-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .add-cart-btn:hover { opacity: 0.9; }
+    .no-products {
+      text-align: center;
+      padding: 60px;
+      color: #999;
+      font-size: 18px;
+      grid-column: 1/-1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <h2>🛍️ ShopEasy</h2>
+    <div class="nav-links">
+      <span id="userName">Hi, User</span>
+      <a href="/cart.html">🛒 Cart (<span id="cartCount">0</span>)</a>
+      <a href="/orders.html">📦 Orders</a>
+      <a href="#" onclick="logout()">Logout</a>
+    </div>
+  </div>
+
+  <div class="filters">
+    <input type="text" id="search" placeholder="🔍 Product search karo..." oninput="loadProducts()" />
+    <select id="category" onchange="loadProducts()">
+      <option value="">All Categories</option>
+      <option value="Electronics">Electronics</option>
+      <option value="Clothing">Clothing</option>
+      <option value="Books">Books</option>
+      <option value="Food">Food</option>
+      <option value="Sports">Sports</option>
+    </select>
+    <select id="sort" onchange="loadProducts()">
+      <option value="">Sort By</option>
+      <option value="price_asc">Price: Low to High</option>
+      <option value="price_desc">Price: High to Low</option>
+    </select>
+  </div>
+
+  <div class="products-grid" id="productsGrid"></div>
+
+  <script>
+    const token = localStorage.getItem('token')
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    if (!token) window.location.href = '/index.html'
+
+    document.getElementById('userName').textContent = `Hi, ${user.name}`
+
+    async function loadProducts() {
+      const search = document.getElementById('search').value
+      const category = document.getElementById('category').value
+      const sort = document.getElementById('sort').value
+
+      let url = '/products?'
+      if (search) url += `search=${search}&`
+      if (category) url += `category=${category}&`
+      if (sort) url += `sort=${sort}`
+
+      const res = await fetch(url)
+      const products = await res.json()
+      renderProducts(products)
+    }
+
+    function renderProducts(products) {
+  const grid = document.getElementById('productsGrid')
+  if (products.length === 0) {
+    grid.innerHTML = '<div class="no-products">😔 Koi product nahi mila</div>'
+    return
+  }
+  grid.innerHTML = products.map(p => `
+    <div class="product-card">
+      <div class="product-img">
+        ${p.image 
+          ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:200px;object-fit:cover;" />`
+          : getCategoryEmoji(p.category)
+        }
+      </div>
+      <div class="product-info">
+        <span class="category">${p.category}</span>
+        <h3>${p.name}</h3>
+        <div class="rating">${'⭐'.repeat(Math.round(p.avgRating))} (${p.avgRating.toFixed(1)})</div>
+        <div class="price">₹${p.price.toLocaleString()}</div>
+        <div class="stock">${p.stock > 0 ? `✅ ${p.stock} in stock` : '❌ Out of stock'}</div>
+        <button class="add-cart-btn" onclick="addToCart('${p._id}')" ${p.stock === 0 ? 'disabled' : ''}>
+          🛒 Cart mein add karo
+        </button>
+      </div>
+    </div>
+  `).join('')
+}
+
+    function getCategoryEmoji(category) {
+      const emojis = {
+        'Electronics': '📱',
+        'Clothing': '👕',
+        'Books': '📚',
+        'Food': '🍕',
+        'Sports': '⚽'
+      }
+      return emojis[category] || '📦'
+    }
+
+    async function addToCart(productId) {
+      try {
+        const res = await fetch('/cart/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ productId, quantity: 1 })
+        })
+        const data = await res.json()
+        if (res.ok) {
+          alert('✅ Cart mein add ho gaya!')
+          loadCartCount()
+        } else {
+          alert(data.message)
+        }
+      } catch {
+        alert('Kuch galat hua!')
+      }
+    }
+
+    async function loadCartCount() {
+      const res = await fetch('/cart', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      const cart = await res.json()
+      document.getElementById('cartCount').textContent = cart.items?.length || 0
+    }
+
+    function logout() {
+      localStorage.clear()
+      window.location.href = '/index.html'
+    }
+
+    loadProducts()
+    loadCartCount()
+  </script>
+</body>
+</html>

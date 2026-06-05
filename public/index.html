@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - ShopEasy</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      width: 420px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    h2 { text-align: center; color: #f5576c; margin-bottom: 30px; font-size: 28px; }
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 16px;
+      border: 2px solid #eee;
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+    }
+    input:focus { border-color: #f5576c; }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .msg { text-align: center; margin-top: 16px; color: red; font-size: 14px; }
+    .link { text-align: center; margin-top: 16px; }
+    .link a { color: #f5576c; text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>🛍️ Login</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login Karo</button>
+    <p class="msg" id="msg"></p>
+    <div class="link">Account nahi hai? <a href="/register.html">Register karo</a></div>
+  </div>
+  <script>
+    async function login() {
+      const email = document.getElementById('email').value
+      const password = document.getElementById('password').value
+      const msg = document.getElementById('msg')
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        })
+        const data = await res.json()
+        if (res.ok) {
+          localStorage.setItem('token', data.token)
+          localStorage.setItem('user', JSON.stringify(data.user))
+          if (data.user.role === 'admin') {
+            window.location.href = '/admin.html'
+          } else {
+            window.location.href = '/products.html'
+          }
+        } else {
+          msg.textContent = data.message
+        }
+      } catch {
+        msg.textContent = 'Kuch galat hua!'
+      }
+    }
+  </script>
+</body>
+</html>
